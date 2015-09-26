@@ -32,7 +32,7 @@ end
 
 function oauth_sign!(q::Query)
     signing_key = "$(encode(q.cred.consumer_secret))&$(encode(q.cred.oauth_secret))"
-    h = Nettle.HMACState(Nettle.SHA1, signing_key)
+    h = Nettle.HMACState("SHA1", signing_key)
     sig = "GET&$(encode(q.baseurl))&$(encode(tostring(q.params)))"
     # for whatever reason, Yelp doesn't like a few values
     # that Requests.encodeURI puts in
@@ -121,7 +121,7 @@ function Base.get(q::Query)
     q.params["oauth_timestamp"] = int(time())
     oauth_header = oauth_sign!(q)
     url = URI("$(q.baseurl)?$(encode(q.params))")
-    return Requests.get(url; 
+    return Requests.get(url;
                 headers = {"Content-Type" => "application/x-www-form-urlencoded",
                 "Authorization" => oauth_header,
                 "Accept" => "*/*"})
